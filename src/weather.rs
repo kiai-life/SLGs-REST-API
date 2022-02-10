@@ -87,7 +87,7 @@ pub async fn get_weather(query: web::Query<GetWeatherQuery>) -> Result<HttpRespo
           };
           let body = serde_json::to_string(&data)?;
           Ok(
-            HttpResponse::ExpectationFailed()
+            HttpResponse::BadRequest()
               .content_type("application/json")
               .body(body),
           )
@@ -102,7 +102,7 @@ pub async fn get_weather(query: web::Query<GetWeatherQuery>) -> Result<HttpRespo
       };
       let body = serde_json::to_string(&data)?;
       Ok(
-        HttpResponse::ExpectationFailed()
+        HttpResponse::BadRequest()
           .content_type("application/json")
           .body(body),
       )
