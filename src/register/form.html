@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ja">
+  <script>
+    window.addEventListener("DOMContentLoaded", function(){
+      let button_view_pass = document.getElementById("button_view_pass");
+      let input_pass = document.getElementById("input_pass");
+      button_view_pass.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (input_pass.type === "password") {
+          input_pass.type = "text";
+          button_view_pass.textContent = "非表示";
+        } else {
+          input_pass.type = "password";
+          button_view_pass.textContent = "表示";
+        }
+      });
+    });
+  </script>
+  <head>
+    <meta charset=utf-8>
+    <title>ユーザー登録ページ</title>
+  </head>
+  <body>
+    <h1>登録フォーム</h1>
+    <form action=/register/post_user method=POST>
+      <p><input name="id" type="text" placeholder="User ID（半角英数）" pattern="^[0-9A-Za-z_]+$" required></p>
+      <p><input name="email" type="email" placeholder="Email" required></p>
+      <p>
+        <input name="password" type="password" placeholder="Password" autocomplete="new-password" id="input_pass" required>
+        <button id="button_view_pass">表示</button>
+      </p>
+      <button type=submit>送信</button>
+    </form>
+  </body>
+</html>

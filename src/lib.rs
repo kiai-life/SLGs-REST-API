@@ -5,6 +5,8 @@ use actix_web::{
 use openssl::ssl::{SslConnector, SslMethod};
 use serde_json::Value;
 
+pub mod db;
+pub mod register;
 pub mod weather;
 
 async fn url_get_json(url: &str) -> Result<Value, Error> {
