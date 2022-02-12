@@ -61,3 +61,14 @@ pub async fn register_user_data(id: &str, email: &str, password: &str) -> Result
   ))?;
   Ok(())
 }
+
+pub async fn check_user_password(id: &str, password: &str) -> Result<bool, Error> {
+  let mut client = make_db_clinet()?;
+  let mut t = Ok(false);
+  for row in client.query("SELECT * FROM login_data WHERE id = $1", &[&id])? {
+    let password_hash: &str = row.get(2);
+    let input_password_hash = &make_password_hash(password);
+    t = Ok(password_hash == input_password_hash);
+  }
+  t
+}
