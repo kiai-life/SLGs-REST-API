@@ -1,4 +1,4 @@
-use actix_web::{get, middleware::Logger, App, Error, HttpResponse, HttpServer};
+use actix_web::{get, middleware::Logger, web, App, Error, HttpResponse, HttpServer};
 use slgs_rest_api::{register, weather};
 
 #[get("/ping")]
@@ -18,7 +18,7 @@ async fn main() -> std::io::Result<()> {
     App::new()
       .wrap(Logger::default())
       .service(index)
-      .service(weather::get_weather)
+      .service(web::scope("/api/v1").service(weather::get_weather))
       .service(register::post_user_data)
       .service(register::register_user)
   })

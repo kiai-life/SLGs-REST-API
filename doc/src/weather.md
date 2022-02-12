@@ -20,9 +20,9 @@ GETを用いて天気を取得します。
 
 
 ```sh
-curl -GET "localhost:55555/weather?city=tokyo&date=2022-02-11"
+curl -GET "localhost:55555/api/v1/weather?city=tokyo&date=2022-02-11"
 
-curl -GET "localhost:55555/weather?city=%E6%9D%B1%E4%BA%AC&date=2022-02-11"
+curl -GET "localhost:55555/api/v1/weather?city=%E6%9D%B1%E4%BA%AC&date=2022-02-11"
 ```
 
 
