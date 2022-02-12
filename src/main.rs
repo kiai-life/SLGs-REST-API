@@ -1,4 +1,4 @@
-use actix_web::{get, middleware::Logger, App, Error, HttpResponse, HttpServer, web};
+use actix_web::{get, middleware::Logger, web, App, Error, HttpResponse, HttpServer};
 use slgs_rest_api::{register, weather};
 
 #[get("/ping")]
