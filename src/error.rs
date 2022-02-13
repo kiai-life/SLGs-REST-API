@@ -53,8 +53,8 @@ impl ResponseError for ApiError {
   }
 
   fn error_response(&self) -> HttpResponse {
-    match self.clone() {
-      ApiError::ActixWebError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
+    match self {
+      &ApiError::ActixWebError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "error".to_string(),
       }),
@@ -65,36 +65,36 @@ impl ResponseError for ApiError {
           msg: "database error".to_string(),
         }),
       },
-      ApiError::NotFoundUserId => HttpResponse::build(self.status_code()).json(ErrorBody {
+      &ApiError::NotFoundUserId => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "not found user id".to_string(),
       }),
-      ApiError::InvalidPassword => HttpResponse::build(self.status_code()).json(ErrorBody {
+      &ApiError::InvalidPassword => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "invalid password".to_string(),
       }),
-      ApiError::SSLBuilder(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
+      &ApiError::SSLBuilder(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "SSL error".to_string(),
       }),
-      ApiError::SendRequestError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
+      &ApiError::SendRequestError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "Client error".to_string(),
       }),
-      ApiError::JsonPayloadError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
+      &ApiError::JsonPayloadError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "json parser error".to_string(),
       }),
-      ApiError::SerdeJsonError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
+      &ApiError::SerdeJsonError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "serde_json error".to_string(),
       }),
-      ApiError::APIGetWeather(GetWeatherError::City) => HttpResponse::build(self.status_code())
+      &ApiError::APIGetWeather(GetWeatherError::City) => HttpResponse::build(self.status_code())
         .json(ErrorBody {
           ok: false,
           msg: "invalid_city_name".to_string(),
         }),
-      ApiError::APIGetWeather(GetWeatherError::Date) => HttpResponse::build(self.status_code())
+      &ApiError::APIGetWeather(GetWeatherError::Date) => HttpResponse::build(self.status_code())
         .json(ErrorBody {
           ok: false,
           msg: "date_not_found".to_string(),

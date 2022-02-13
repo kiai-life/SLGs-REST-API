@@ -1,5 +1,5 @@
 use actix_web::Result;
-use chrono::{DateTime, FixedOffset};
+use chrono::{DateTime, FixedOffset, Utc};
 use data_encoding::HEXUPPER;
 use postgres::{Client, NoTls};
 use ring::digest::{digest, SHA256};
@@ -99,7 +99,7 @@ pub async fn get_data(
   if check_user_password(id, password).await? {
     if let Some(row) = (client
       .query(
-        &format!("SELECT * FROM {id}_user_data WHERE name = $1"),
+        &format!("SELECT * FROM {id}_user_data WHERE name=$1"),
         &[&name],
       )
       .map_err(|e| ApiError::DataBase(None, e))?)
@@ -117,6 +117,27 @@ pub async fn get_data(
   }
 }
 
+pub async fn insert_data(
+  id: &str,
+  password: &str,
+  name: &str,
+  data: &Value,
+) -> Result<(), ApiError> {
+  let mut client = make_db_clinet()?;
+  if check_user_password(id, password).await? {
+    let now = Utc::now().with_timezone(&FixedOffset::east(9 * 3600));
+    client
+      .execute(
+        &format!("INSERT INTO {id}_user_data (name, data, timestamp) VALUES ($1, $2, $3)"),
+        &[&name, &data, &now],
+      )
+      .map_err(|e| ApiError::DataBase(None, e))?;
+    Ok(())
+  } else {
+    Err(ApiError::InvalidPassword)
+  }
+}
+
 pub async fn update_data(
   id: &str,
   password: &str,
@@ -125,6 +146,28 @@ pub async fn update_data(
 ) -> Result<(), ApiError> {
   let mut client = make_db_clinet()?;
   if check_user_password(id, password).await? {
+    let now = Utc::now().with_timezone(&FixedOffset::east(9 * 3600));
+    client
+      .execute(
+        &format!("UPDATE {id}_user_data SET data=$1 timestamp=$2 WHERE name=$3"),
+        &[&data, &now, &name],
+      )
+      .map_err(|e| ApiError::DataBase(None, e))?;
+    Ok(())
+  } else {
+    Err(ApiError::InvalidPassword)
+  }
+}
+
+pub async fn delete_data(id: &str, password: &str, name: &str) -> Result<(), ApiError> {
+  let mut client = make_db_clinet()?;
+  if check_user_password(id, password).await? {
+    client
+      .execute(
+        &format!("DELETE FROM {id}_user_data WHERE name=$1"),
+        &[&name],
+      )
+      .map_err(|e| ApiError::DataBase(None, e))?;
     Ok(())
   } else {
     Err(ApiError::InvalidPassword)

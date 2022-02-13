@@ -67,7 +67,7 @@ pub async fn get_weather(query: web::Query<GetWeatherQuery>) -> Result<HttpRespo
             chance_of_rain: v.get("chanceOfRain").cloned(),
             copyright: weather_json.get("copyright").cloned(),
           };
-          let body = serde_json::to_string(&data).map_err(|e| ApiError::SerdeJsonError(e))?;
+          let body = serde_json::to_string(&data).map_err(ApiError::SerdeJsonError)?;
           Ok(
             HttpResponse::Ok()
               .content_type("application/json")
