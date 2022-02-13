@@ -1,14 +1,14 @@
-use actix_web::{get, post, web, Error, HttpResponse};
+use actix_web::{get, post, web, HttpResponse, Result};
 use serde::{Deserialize, Serialize};
+
+use crate::error::ApiError;
 
 /// ref: https://weather.tsukumijima.net/
 #[get("/register")]
-pub async fn register_user() -> Result<HttpResponse, Error> {
-  Ok(
-    HttpResponse::Ok()
-      .content_type("text/html; charset=utf-8")
-      .body(include_str!("./register/form.html")),
-  )
+pub async fn register_user() -> HttpResponse {
+  HttpResponse::Ok()
+    .content_type("text/html; charset=utf-8")
+    .body(include_str!("./register/form.html"))
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -19,13 +19,12 @@ pub struct UserData {
 }
 
 #[post("/register/post_user")]
-pub async fn post_user_data(params: web::Form<UserData>) -> HttpResponse {
+pub async fn post_user_data(params: web::Form<UserData>) -> Result<HttpResponse, ApiError> {
   use crate::db;
-  let res = db::register_user_data(&params.id, &params.email, &params.password).await;
-  match res {
-    Ok(_) => HttpResponse::Ok()
+  db::register_user_data(&params.id, &params.email, &params.password).await?;
+  Ok(
+    HttpResponse::Ok()
       .content_type("text/html; charset=utf-8")
       .body(include_str!("./register/success.html")),
-    Err(_) => HttpResponse::InternalServerError().finish(),
-  }
+  )
 }
