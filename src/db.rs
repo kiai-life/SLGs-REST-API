@@ -67,7 +67,7 @@ pub async fn register_user_data(id: &str, email: &str, password: &str) -> Result
       "CREATE TABLE {id}_user_data (
       name TEXT PRIMARY KEY,
       data JSON NOT NULL,
-      timestamp TIMESTAMPTZ NOT NULL,
+      timestamp TIMESTAMPTZ NOT NULL
     )"
     ))
     .map_err(|e| ApiError::DataBase(None, e))?;
