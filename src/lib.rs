@@ -5,10 +5,10 @@ use actix_web::{
 use openssl::ssl::{SslConnector, SslMethod};
 use serde_json::Value;
 
+pub mod api;
 pub mod db;
 pub mod error;
 pub mod register;
-pub mod weather;
 
 use error::ApiError;
 
