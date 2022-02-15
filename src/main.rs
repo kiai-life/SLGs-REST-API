@@ -18,7 +18,11 @@ async fn main() -> std::io::Result<()> {
     App::new()
       .wrap(Logger::default())
       .service(index)
-      .service(web::scope("/api/v1").service(api::weather::get_weather))
+      .service(
+        web::scope("/api/v1")
+          .service(api::weather::get_weather)
+          .service(api::car::register_car_id),
+      )
       .service(register::post_user_data)
       .service(register::register_user)
   })

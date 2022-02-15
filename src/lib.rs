@@ -1,5 +1,6 @@
 use actix_web::{
   client::{Client, Connector},
+  http::header::HeaderMap,
   Result,
 };
 use openssl::ssl::{SslConnector, SslMethod};
@@ -11,6 +12,17 @@ pub mod error;
 pub mod register;
 
 use error::ApiError;
+
+async fn get_header_str(headers: &HeaderMap, name: &str) -> Result<String, ApiError> {
+  Ok(
+    headers
+      .get(name)
+      .ok_or_else(|| ApiError::HeaderFailed(name.to_string()))?
+      .to_str()
+      .map_err(|_| ApiError::HeaderFailed(name.to_string()))?
+      .to_string(),
+  )
+}
 
 async fn url_get_json(url: &str) -> Result<Value, ApiError> {
   let builder = SslConnector::builder(SslMethod::tls()).map_err(ApiError::SSLBuilder)?;
