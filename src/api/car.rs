@@ -30,6 +30,25 @@ pub async fn register_car_id(
     "fuel_type" : body.fuel_type,
     "manufacture" : body.manufacture,
   });
-  db::insert_data(&user_id, &user_password, CAR_ID_DATA_NAME, &json).await?;
-  Err(ApiError::NotFoundUserId)
+  match db::get_data(&user_id, &user_password, CAR_ID_DATA_NAME) {
+    Ok((get_data, _)) => get_data
+      .as_array()
+      .map(|lst| {
+        let mut lst = lst.clone();
+        lst.push(json);
+        let data = serde_json::json!(lst);
+        db::update_data(&user_id, &user_password, CAR_ID_DATA_NAME, &data)
+      })
+      .ok_or(ApiError::InvalidData)??,
+    Err(ApiError::NotFoundData) => {
+      let data = serde_json::json!([json]);
+      db::insert_data(&user_id, &user_password, CAR_ID_DATA_NAME, &data)?
+    }
+    Err(e) => return Err(e),
+  };
+  Ok(
+    HttpResponse::Ok()
+      .content_type("application/json")
+      .body(r#"{"ok": true}"#),
+  )
 }

@@ -27,6 +27,10 @@ pub enum ApiError {
   NotFoundUserId,
   #[error("invalid password")]
   InvalidPassword,
+  #[error("")]
+  NotFoundData,
+  #[error("")]
+  InvalidData,
   #[error("SSL error")]
   SSLBuilder(#[source] openssl::error::ErrorStack),
   #[error("")]
@@ -47,6 +51,8 @@ impl ResponseError for ApiError {
       ApiError::DataBase(_, _) => StatusCode::INTERNAL_SERVER_ERROR,
       ApiError::NotFoundUserId => StatusCode::BAD_REQUEST,
       ApiError::InvalidPassword => StatusCode::BAD_REQUEST,
+      ApiError::NotFoundData => StatusCode::BAD_REQUEST,
+      ApiError::InvalidData => StatusCode::INTERNAL_SERVER_ERROR,
       ApiError::SSLBuilder(_) => StatusCode::INTERNAL_SERVER_ERROR,
       ApiError::SendRequestError(_) => StatusCode::INTERNAL_SERVER_ERROR,
       ApiError::JsonPayloadError(_) => StatusCode::INTERNAL_SERVER_ERROR,
@@ -76,6 +82,14 @@ impl ResponseError for ApiError {
       ApiError::InvalidPassword => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "invalid password".to_string(),
+      }),
+      ApiError::NotFoundData => HttpResponse::build(self.status_code()).json(ErrorBody {
+        ok: false,
+        msg: "not found data".to_string(),
+      }),
+      ApiError::InvalidData => HttpResponse::build(self.status_code()).json(ErrorBody {
+        ok: false,
+        msg: "invalid data".to_string(),
       }),
       ApiError::SSLBuilder(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,

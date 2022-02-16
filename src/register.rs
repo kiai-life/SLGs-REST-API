@@ -21,7 +21,7 @@ pub struct UserData {
 #[post("/register/post_user")]
 pub async fn post_user_data(params: web::Form<UserData>) -> Result<HttpResponse, ApiError> {
   use crate::db;
-  db::register_user_data(&params.id, &params.email, &params.password).await?;
+  db::register_user_data(&params.id, &params.email, &params.password)?;
   Ok(
     HttpResponse::Ok()
       .content_type("text/html; charset=utf-8")
