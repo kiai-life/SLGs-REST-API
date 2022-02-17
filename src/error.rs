@@ -19,12 +19,18 @@ pub struct ErrorBody {
 pub enum ApiError {
   #[error("")]
   ActixWebError(actix_web::Error),
+  #[error("header failed")]
+  HeaderFailed(String),
   #[error("database error")]
   DataBase(Option<ErrorBody>, #[source] postgres::Error),
   #[error("database error")]
   NotFoundUserId,
   #[error("invalid password")]
   InvalidPassword,
+  #[error("")]
+  NotFoundData,
+  #[error("")]
+  InvalidData,
   #[error("SSL error")]
   SSLBuilder(#[source] openssl::error::ErrorStack),
   #[error("")]
@@ -34,6 +40,8 @@ pub enum ApiError {
   #[error("")]
   SerdeJsonError(#[source] serde_json::Error),
   #[error("")]
+  ChronoError,
+  #[error("")]
   APIGetWeather(GetWeatherError),
 }
 
@@ -41,60 +49,77 @@ impl ResponseError for ApiError {
   fn status_code(&self) -> StatusCode {
     match *self {
       ApiError::ActixWebError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+      ApiError::HeaderFailed(_) => StatusCode::PRECONDITION_FAILED,
       ApiError::DataBase(_, _) => StatusCode::INTERNAL_SERVER_ERROR,
       ApiError::NotFoundUserId => StatusCode::BAD_REQUEST,
       ApiError::InvalidPassword => StatusCode::BAD_REQUEST,
+      ApiError::NotFoundData => StatusCode::BAD_REQUEST,
+      ApiError::InvalidData => StatusCode::INTERNAL_SERVER_ERROR,
       ApiError::SSLBuilder(_) => StatusCode::INTERNAL_SERVER_ERROR,
       ApiError::SendRequestError(_) => StatusCode::INTERNAL_SERVER_ERROR,
       ApiError::JsonPayloadError(_) => StatusCode::INTERNAL_SERVER_ERROR,
       ApiError::SerdeJsonError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+      ApiError::ChronoError => StatusCode::INTERNAL_SERVER_ERROR,
       ApiError::APIGetWeather(_) => StatusCode::BAD_REQUEST,
     }
   }
 
   fn error_response(&self) -> HttpResponse {
-    match self {
-      &ApiError::ActixWebError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
+    match *self {
+      ApiError::ActixWebError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "error".to_string(),
       }),
-      ApiError::DataBase(body_opt, _) => match body_opt {
-        Some(body) => HttpResponse::build(self.status_code()).json(body),
-        None => HttpResponse::build(self.status_code()).json(ErrorBody {
-          ok: false,
-          msg: "database error".to_string(),
-        }),
-      },
-      &ApiError::NotFoundUserId => HttpResponse::build(self.status_code()).json(ErrorBody {
+      ApiError::DataBase(_, _) => HttpResponse::build(self.status_code()).json(ErrorBody {
+        ok: false,
+        msg: "database error".to_string(),
+      }),
+      ApiError::HeaderFailed(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
+        ok: false,
+        msg: "header failed".to_string(),
+      }),
+      ApiError::NotFoundUserId => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "not found user id".to_string(),
       }),
-      &ApiError::InvalidPassword => HttpResponse::build(self.status_code()).json(ErrorBody {
+      ApiError::InvalidPassword => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "invalid password".to_string(),
       }),
-      &ApiError::SSLBuilder(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
+      ApiError::NotFoundData => HttpResponse::build(self.status_code()).json(ErrorBody {
+        ok: false,
+        msg: "not found data".to_string(),
+      }),
+      ApiError::InvalidData => HttpResponse::build(self.status_code()).json(ErrorBody {
+        ok: false,
+        msg: "invalid data".to_string(),
+      }),
+      ApiError::SSLBuilder(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "SSL error".to_string(),
       }),
-      &ApiError::SendRequestError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
+      ApiError::SendRequestError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "Client error".to_string(),
       }),
-      &ApiError::JsonPayloadError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
+      ApiError::JsonPayloadError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "json parser error".to_string(),
       }),
-      &ApiError::SerdeJsonError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
+      ApiError::SerdeJsonError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "serde_json error".to_string(),
       }),
-      &ApiError::APIGetWeather(GetWeatherError::City) => HttpResponse::build(self.status_code())
+      ApiError::ChronoError => HttpResponse::build(self.status_code()).json(ErrorBody {
+        ok: false,
+        msg: "chrono error".to_string(),
+      }),
+      ApiError::APIGetWeather(GetWeatherError::City) => HttpResponse::build(self.status_code())
         .json(ErrorBody {
           ok: false,
           msg: "invalid_city_name".to_string(),
         }),
-      &ApiError::APIGetWeather(GetWeatherError::Date) => HttpResponse::build(self.status_code())
+      ApiError::APIGetWeather(GetWeatherError::Date) => HttpResponse::build(self.status_code())
         .json(ErrorBody {
           ok: false,
           msg: "date_not_found".to_string(),

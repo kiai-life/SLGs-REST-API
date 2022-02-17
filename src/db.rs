@@ -42,7 +42,7 @@ fn make_db_clinet() -> Result<Client, ApiError> {
   ).map_err(|e| ApiError::DataBase(None, e))
 }
 
-pub async fn register_user_data(id: &str, email: &str, password: &str) -> Result<(), ApiError> {
+pub fn register_user_data(id: &str, email: &str, password: &str) -> Result<(), ApiError> {
   let mut client = make_db_clinet()?;
   client
     .batch_execute(
@@ -74,7 +74,7 @@ pub async fn register_user_data(id: &str, email: &str, password: &str) -> Result
   Ok(())
 }
 
-pub async fn check_user_password(id: &str, password: &str) -> Result<bool, ApiError> {
+pub fn check_user_password(id: &str, password: &str) -> Result<bool, ApiError> {
   let mut client = make_db_clinet()?;
   if let Some(row) = (client
     .query("SELECT * FROM login_data WHERE id = $1", &[&id])
@@ -90,13 +90,13 @@ pub async fn check_user_password(id: &str, password: &str) -> Result<bool, ApiEr
   }
 }
 
-pub async fn get_data(
+pub fn get_data(
   id: &str,
   password: &str,
   name: &str,
 ) -> Result<(Value, DateTime<FixedOffset>), ApiError> {
   let mut client = make_db_clinet()?;
-  if check_user_password(id, password).await? {
+  if check_user_password(id, password)? {
     if let Some(row) = (client
       .query(
         &format!("SELECT * FROM {id}_user_data WHERE name=$1"),
@@ -110,21 +110,16 @@ pub async fn get_data(
       let timestamp: DateTime<FixedOffset> = row.get(2);
       Ok((data, timestamp))
     } else {
-      Err(ApiError::NotFoundUserId)
+      Err(ApiError::NotFoundData)
     }
   } else {
     Err(ApiError::InvalidPassword)
   }
 }
 
-pub async fn insert_data(
-  id: &str,
-  password: &str,
-  name: &str,
-  data: &Value,
-) -> Result<(), ApiError> {
+pub fn insert_data(id: &str, password: &str, name: &str, data: &Value) -> Result<(), ApiError> {
   let mut client = make_db_clinet()?;
-  if check_user_password(id, password).await? {
+  if check_user_password(id, password)? {
     let now = Utc::now().with_timezone(&FixedOffset::east(9 * 3600));
     client
       .execute(
@@ -138,18 +133,13 @@ pub async fn insert_data(
   }
 }
 
-pub async fn update_data(
-  id: &str,
-  password: &str,
-  name: &str,
-  data: &Value,
-) -> Result<(), ApiError> {
+pub fn update_data(id: &str, password: &str, name: &str, data: &Value) -> Result<(), ApiError> {
   let mut client = make_db_clinet()?;
-  if check_user_password(id, password).await? {
+  if check_user_password(id, password)? {
     let now = Utc::now().with_timezone(&FixedOffset::east(9 * 3600));
     client
       .execute(
-        &format!("UPDATE {id}_user_data SET data=$1 timestamp=$2 WHERE name=$3"),
+        &format!("UPDATE {id}_user_data SET data=$1, timestamp=$2 WHERE name=$3"),
         &[&data, &now, &name],
       )
       .map_err(|e| ApiError::DataBase(None, e))?;
@@ -159,9 +149,9 @@ pub async fn update_data(
   }
 }
 
-pub async fn delete_data(id: &str, password: &str, name: &str) -> Result<(), ApiError> {
+pub fn delete_data(id: &str, password: &str, name: &str) -> Result<(), ApiError> {
   let mut client = make_db_clinet()?;
-  if check_user_password(id, password).await? {
+  if check_user_password(id, password)? {
     client
       .execute(
         &format!("DELETE FROM {id}_user_data WHERE name=$1"),
