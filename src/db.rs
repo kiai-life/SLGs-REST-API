@@ -139,7 +139,7 @@ pub fn update_data(id: &str, password: &str, name: &str, data: &Value) -> Result
     let now = Utc::now().with_timezone(&FixedOffset::east(9 * 3600));
     client
       .execute(
-        &format!("UPDATE {id}_user_data SET data=$1 timestamp=$2 WHERE name=$3"),
+        &format!("UPDATE {id}_user_data SET data=$1, timestamp=$2 WHERE name=$3"),
         &[&data, &now, &name],
       )
       .map_err(|e| ApiError::DataBase(None, e))?;

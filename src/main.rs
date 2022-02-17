@@ -21,7 +21,8 @@ async fn main() -> std::io::Result<()> {
       .service(
         web::scope("/api/v1")
           .service(api::weather::get_weather)
-          .service(api::car::register_car_id),
+          .service(api::car::register_car_id)
+          .service(api::car::register_refuel_data),
       )
       .service(register::post_user_data)
       .service(register::register_user)

@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::ApiError;
 
-/// ref: https://weather.tsukumijima.net/
 #[get("/register")]
 pub async fn register_user() -> HttpResponse {
   HttpResponse::Ok()

@@ -40,6 +40,8 @@ pub enum ApiError {
   #[error("")]
   SerdeJsonError(#[source] serde_json::Error),
   #[error("")]
+  ChronoError,
+  #[error("")]
   APIGetWeather(GetWeatherError),
 }
 
@@ -57,6 +59,7 @@ impl ResponseError for ApiError {
       ApiError::SendRequestError(_) => StatusCode::INTERNAL_SERVER_ERROR,
       ApiError::JsonPayloadError(_) => StatusCode::INTERNAL_SERVER_ERROR,
       ApiError::SerdeJsonError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+      ApiError::ChronoError => StatusCode::INTERNAL_SERVER_ERROR,
       ApiError::APIGetWeather(_) => StatusCode::BAD_REQUEST,
     }
   }
@@ -106,6 +109,10 @@ impl ResponseError for ApiError {
       ApiError::SerdeJsonError(_) => HttpResponse::build(self.status_code()).json(ErrorBody {
         ok: false,
         msg: "serde_json error".to_string(),
+      }),
+      ApiError::ChronoError => HttpResponse::build(self.status_code()).json(ErrorBody {
+        ok: false,
+        msg: "chrono error".to_string(),
       }),
       ApiError::APIGetWeather(GetWeatherError::City) => HttpResponse::build(self.status_code())
         .json(ErrorBody {
